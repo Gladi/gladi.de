@@ -158,7 +158,7 @@ def page(lang: str, path: str, title: str, body: str, description: str = "") -> 
 </head>
 <body>
 <header class="top"><div class="wrap">
-  <a class="brand" href="/{lang}/"><img src="/static/img/logo-256.webp" alt="" width="34" height="34">Gladi</a>
+  <a class="brand" href="/{lang}/"><img src="/static/img/avatar-96.webp" alt="" width="34" height="34">Gladi</a>
   <div class="tools">
     <nav class="lang" aria-label="Language">{switch}</nav>
     <button class="theme-toggle" type="button" hidden></button>
@@ -195,7 +195,8 @@ def home(lang: str) -> str:
   {f'<div class="links">{links}</div>' if links else ''}
 </article>""")
     body = f"""<section class="hero">
-  <img src="/static/img/logo-256.webp" alt="Gladi" width="120" height="120">
+  <img src="/static/img/avatar-256.webp" srcset="/static/img/avatar-256.webp 1x, /static/img/avatar-512.webp 2x"
+       alt="Gladi" width="120" height="120">
   <div><h1>Gladi</h1><p>{e(t['tagline'])}</p></div>
 </section>
 <section id="projects">
