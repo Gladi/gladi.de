@@ -1,0 +1,5 @@
+import Caddyfile.snippet
+
+:8089 {
+	import gladi_site /srv/gladi
+}

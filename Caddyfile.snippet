@@ -1,0 +1,27 @@
+# gladi.de - Regeln für die Website (eingebunden in caddy/Caddyfile per "import"; public/ als /srv/gladi gemountet)
+(gladi_site) {
+	root * {args[0]}
+	encode zstd gzip
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+	}
+	@static path /static/*
+	header @static Cache-Control "public, max-age=86400"
+	# Startseite: Sprache nach Browser (Deutsch -> /de/, sonst /en/)
+	@root_de {
+		path /
+		header_regexp Accept-Language "^\s*de"
+	}
+	redir @root_de /de/ 302
+	redir / /en/ 302
+	file_server
+	handle_errors {
+		@404 expression {err.status_code} == 404
+		rewrite @404 /404.html
+		file_server
+	}
+}
