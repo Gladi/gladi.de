@@ -10,8 +10,10 @@ Keine Abhängigkeiten, keine externen Ressourcen, keine Cookies. Texte stehen un
 import argparse
 import html
 import json
+import re
 import shutil
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent
 SITE = "https://gladi.de"
@@ -130,6 +132,23 @@ LANGS = ["en", "de"]
 e = html.escape
 
 
+_A_TAG = re.compile(r"<a\s[^>]*>")
+
+
+def external_new_tab(page_html: str) -> str:
+    """Links nach außerhalb von *.gladi.de öffnen in einem neuen Tab (rel="noopener noreferrer")."""
+    def fix(match):
+        tag = match.group(0)
+        href = re.search(r'href="(https?://[^"]+)"', tag)
+        if not href or "target=" in tag:
+            return tag
+        host = urlparse(href.group(1)).hostname or ""
+        if host == "gladi.de" or host.endswith(".gladi.de"):
+            return tag
+        return tag[:-1] + ' target="_blank" rel="noopener noreferrer">'
+    return _A_TAG.sub(fix, page_html)
+
+
 def page(lang: str, path: str, title: str, body: str, description: str = "") -> str:
     """Gerüst einer Seite; path = Pfad ohne Sprache, z. B. "" oder "privacy/"."""
     t = TEXT[lang]
@@ -139,7 +158,7 @@ def page(lang: str, path: str, title: str, body: str, description: str = "") -> 
     alternates = "".join(f'<link rel="alternate" hreflang="{l}" href="{SITE}/{l}/{path}">' for l in LANGS)
     robots = "" if INDEX else '<meta name="robots" content="noindex, nofollow">'
     labels = e(json.dumps(t["theme"], ensure_ascii=False), quote=True)
-    return f"""<!doctype html>
+    return external_new_tab(f"""<!doctype html>
 <html lang="{lang}" data-theme-labels="{labels}">
 <head>
 <meta charset="utf-8">
@@ -175,7 +194,7 @@ def page(lang: str, path: str, title: str, body: str, description: str = "") -> 
 </div></footer>
 </body>
 </html>
-"""
+""")
 
 
 def home(lang: str) -> str:
